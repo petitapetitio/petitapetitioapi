@@ -2,13 +2,12 @@ import datetime
 from configparser import ConfigParser
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, Response
 from flask import request
 from flask_cors import CORS
 from markupsafe import escape
 
 from src.comments_repository import CommentsRepository
-from src.consts import lorel_ipsum
 from src.domain import UnregisteredComment
 
 app = Flask(__name__)
@@ -36,46 +35,11 @@ def get_comments(post_slug: str):
 </li>"""
 
     return f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Quote of the Day</title>
-        <style>
-            body, html {{
-                height: 100%;
-                margin: 0;
-                font-family: Verdana, sans-serif, system-ui;
-            }}
-            
-            body {{
-                background-color: #F7F7F7; /* Wheat color for a paper-like background */
-                color: #333; /* Dark gray color for text which is easier on the eyes */
-                
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-direction: column;
-                padding: 24px;
-                text-align: center;
-                height: calc(100vh - 48px);
-            }}
-        </style>
-    </head>
-    <body>
-    
-        {lorel_ipsum}
-
         <div id="commentlist">
             <ol>
                 {formatted}
             </ol>
         </div>
-        
-        {lorel_ipsum}
-    </body>
-    </html>
 """
 
 
@@ -90,4 +54,5 @@ def add_comment():
         datetime.date.today(),
     )
     comments_repository.add_comment(comment)
-    return "OK"
+    return Response(status=200)
+
