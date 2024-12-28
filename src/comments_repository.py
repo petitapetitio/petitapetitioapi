@@ -1,36 +1,26 @@
 import datetime
-from sqlite3 import Connection
-from typing import Iterable
+import sqlite3
+from pathlib import Path
 
-from domain import UnregisteredComment, Comment
+from src.domain import UnregisteredComment, Comment
 
 
 class CommentsRepository:
-    def __init__(self, connection, current_comments: Iterable[Comment] = ()):
-        self._connection: Connection = connection
-        self._comments: list[Comment] = list(current_comments)
+    def __init__(self, db_name: Path):
+        self._db_name = db_name
         self._initialize_tables()
 
     def _initialize_tables(self):
-        with self._connection:
-            cursor = self._connection.cursor()
+        print(self._db_name)
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS Comments (Id INT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
             )
 
     def add_comment(self, comment: UnregisteredComment):
-        comment_id = len(self._comments) + 1
-        comment = Comment(
-            comment_id=comment_id,
-            author_name=comment.author_name,
-            author_email=comment.author_email,
-            message=comment.message,
-            date=comment.date,
-        )
-        self._comments.append(comment)
-
-        with self._connection:
-            cursor = self._connection.cursor()
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
             cursor.execute("SELECT max(Id) FROM Comments")
             id_max = cursor.fetchone()[0]
             identifier = id_max + 1 if id_max is not None else 1
@@ -47,8 +37,8 @@ class CommentsRepository:
             )
 
     def comments(self) -> list[Comment]:
-        with self._connection:
-            cursor = self._connection.cursor()
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
             cursor.execute("SELECT Id, Author, Email, Message, Date FROM Comments")
             raw_comments = cursor.fetchall()
             comments = [

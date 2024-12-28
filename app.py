@@ -1,21 +1,18 @@
 import datetime
-import sqlite3
+from pathlib import Path
 
 from flask import Flask
 from flask import request
 from markupsafe import escape
 
-from comments_repository import CommentsRepository
-from consts import lorel_ipsum
-from domain import Comment, UnregisteredComment
+from src.comments_repository import CommentsRepository
+from src.consts import lorel_ipsum
+from src.domain import UnregisteredComment
 
 app = Flask(__name__)
-connection = sqlite3.Connection("petitapetitio.db")
-comments_repository = CommentsRepository(connection, [
-    Comment(1, "Tom", "t@tom.io", "Salut !", datetime.date.today()),
-    Comment(2, "Serge", "s@serge.io", "Salut c'est Serge !",
-            datetime.date.today() + datetime.timedelta(days=1)),
-])
+
+db = Path("petitapetitio.db")
+comments_repository = CommentsRepository(db)
 
 
 @app.route('/comment/<identifier>')
