@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask import Flask
 from flask import request
+from flask_cors import CORS
 from markupsafe import escape
 
 from src.comments_repository import CommentsRepository
@@ -16,6 +17,8 @@ config = ConfigParser()
 config.read("settings.ini")
 db = Path(config["general"]["db_path"])
 comments_repository = CommentsRepository(db)
+origins = config["general"]["cors_origins"].split(",")
+CORS(app, origins=origins)
 
 
 @app.route('/comments/<post_slug>')
