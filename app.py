@@ -11,18 +11,15 @@ from src.domain import UnregisteredComment
 
 app = Flask(__name__)
 
-db = Path("petitapetitio.db")
+db = Path("data/petitapetitio.db")
 comments_repository = CommentsRepository(db)
 
 
-@app.route('/comment/<identifier>')
-def hello_world(identifier):
-    print(identifier)
-    # 1. Interroger la DB
-    # 2. Je récupère la liste des commentaires
-    # 3. Je renvoie le HTML
+@app.route('/comment/<int:post_id>')
+def get_comments(post_id: int):
+    print("get_comments", post_id)
 
-    comments = comments_repository.comments()
+    comments = comments_repository.comments(post_id)
 
     formatted = ""
     for comment in comments:
@@ -80,6 +77,7 @@ def hello_world(identifier):
 def add_comment():
     print(request.values)
     comment = UnregisteredComment(
+        int(request.form['post_id']),
         escape(request.form['author_name']),
         escape(request.form['author_email']),
         escape(request.form['message']),

@@ -11,11 +11,11 @@ class CommentsRepository:
         self._initialize_tables()
 
     def _initialize_tables(self):
-        print(self._db_name)
+        print("_initialize_tables", self._db_name)
         with sqlite3.connect(self._db_name) as con:
             cursor = con.cursor()
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS Comments (Id INT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
+                "CREATE TABLE IF NOT EXISTS Comments (Id INT, PostId INT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
             )
 
     def add_comment(self, comment: UnregisteredComment):
@@ -26,9 +26,10 @@ class CommentsRepository:
             identifier = id_max + 1 if id_max is not None else 1
 
             cursor.execute(
-                "INSERT INTO Comments(Id, Author, Email, Message, Date) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO Comments(Id, PostId, Author, Email, Message, Date) VALUES (?, ?, ?, ?, ?, ?)",
                 (
                     identifier,
+                    comment.post_id,
                     comment.author_name,
                     comment.author_email,
                     comment.message,
@@ -36,14 +37,15 @@ class CommentsRepository:
                 ),
             )
 
-    def comments(self) -> list[Comment]:
+    def comments(self, post_id: int) -> list[Comment]:
         with sqlite3.connect(self._db_name) as con:
             cursor = con.cursor()
-            cursor.execute("SELECT Id, Author, Email, Message, Date FROM Comments")
+            cursor.execute("SELECT Id, Author, Email, Message, Date FROM Comments WHERE PostId = ?", (post_id,))
             raw_comments = cursor.fetchall()
             comments = [
                 Comment(
                     comment_id=c[0],
+                    post_id=post_id,
                     author_name=c[1],
                     author_email=c[2],
                     message=c[3],
