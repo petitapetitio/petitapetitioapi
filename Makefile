@@ -8,7 +8,10 @@ update:
 	fi
 
 devserver:
-	python -m flask --app app run
+	python -m flask --app app run -h localhost -p 3000
 
 restart:
 	doas rcctl restart petitapetitioapid
+
+stop:
+	doas rcctl stop petitapetitioapid
