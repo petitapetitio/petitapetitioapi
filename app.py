@@ -1,4 +1,5 @@
 import datetime
+from configparser import ConfigParser
 from pathlib import Path
 
 from flask import Flask
@@ -11,11 +12,14 @@ from src.domain import UnregisteredComment
 
 app = Flask(__name__)
 
-db = Path("data/petitapetitio.db")
+config = ConfigParser()
+config.read("settings.ini")
+db = Path(config["general"]["db_path"])
+print(db)
 comments_repository = CommentsRepository(db)
 
 
-@app.route('/comment/<int:post_id>')
+@app.route('/comments/<int:post_id>')
 def get_comments(post_id: int):
     print("get_comments", post_id)
 
