@@ -23,7 +23,7 @@ class SMTPEmailClient(EmailClient):
     def notify_new_comment(self, comment: UnregisteredComment):
         # Create the email message
         message = MIMEMultipart()
-        message['From'] = "comments@petitapetit.io"
+        message['From'] = "comment@petitapetit.io"
         message['To'] = "a@petitapetit.io"
         message['Subject'] = f"[{comment.post_slug}] {comment.author_name} a commenté"
         message['Reply-To'] = comment.author_email
