@@ -15,15 +15,14 @@ app = Flask(__name__)
 config = ConfigParser()
 config.read("settings.ini")
 db = Path(config["general"]["db_path"])
-print(db)
 comments_repository = CommentsRepository(db)
 
 
-@app.route('/comments/<int:post_id>')
-def get_comments(post_id: int):
-    print("get_comments", post_id)
+@app.route('/comments/<post_slug>')
+def get_comments(post_slug: str):
+    print("get_comments", post_slug)
 
-    comments = comments_repository.comments(post_id)
+    comments = comments_repository.comments(post_slug)
 
     formatted = ""
     for comment in comments:
@@ -74,14 +73,14 @@ def get_comments(post_id: int):
         {lorel_ipsum}
     </body>
     </html>
-    """
+"""
 
 
 @app.route('/comment', methods=['POST'])
 def add_comment():
     print(request.values)
     comment = UnregisteredComment(
-        int(request.form['post_id']),
+        escape(request.form['post_slug']),
         escape(request.form['author_name']),
         escape(request.form['author_email']),
         escape(request.form['message']),
