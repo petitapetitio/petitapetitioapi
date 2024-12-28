@@ -25,4 +25,4 @@ flask --app app run
 
 1. push the changes
 2. log on the server (pa) and pull (with my user)
-3. `doas rcctl restart leequotesd`
+3. `doas rcctl restart petitapetitioapi`
