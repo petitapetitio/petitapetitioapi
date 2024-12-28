@@ -6,6 +6,15 @@ from src.comments_repository import CommentsRepository
 from src.domain import UnregisteredComment, Comment
 
 
+def test_adding_empty_comments():
+    try:
+        comments_repository = CommentsRepository(Path("test_repository.db"))
+        retrieved = comments_repository.comments("dbz")
+        assert retrieved == []
+    finally:
+        os.remove("test_repository.db")
+
+
 def test_adding_and_retrieving_two_comments():
     try:
 
