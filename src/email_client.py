@@ -26,6 +26,7 @@ class SMTPEmailClient(EmailClient):
         message['From'] = "comments@petitapetit.io"
         message['To'] = "a@petitapetit.io"
         message['Subject'] = f"[{comment.post_slug}] {comment.author_name} a commenté"
+        message['Reply-To'] = comment.author_email
 
         message.attach(MIMEText(comment.message, 'plain'))
 
