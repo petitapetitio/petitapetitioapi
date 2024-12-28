@@ -1,4 +1,5 @@
 import datetime
+import sys
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from markupsafe import escape
 
 from src.comments_repository import CommentsRepository
 from src.domain import UnregisteredComment
+from src.email_client import DisabledEmailClient, SMTPEmailClient
 
 app = Flask(__name__)
 
@@ -17,6 +19,8 @@ config.read("settings.ini")
 db = Path(config["general"]["db_path"])
 comments_repository = CommentsRepository(db)
 origins = config["general"]["cors_origins"].split(",")
+is_local = sys.platform.startswith("darwin")
+email_client = DisabledEmailClient() if is_local else SMTPEmailClient()
 CORS(app, origins=origins)
 
 
@@ -54,5 +58,6 @@ def add_comment():
         datetime.date.today(),
     )
     comments_repository.add_comment(comment)
+    email_client.notify_new_comment(comment)
     return Response(status=200)
 
