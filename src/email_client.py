@@ -1,4 +1,5 @@
 import abc
+import html
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -35,7 +36,7 @@ class SMTPEmailClient(EmailClient):
         message['Subject'] = f"[{comment.post_slug}] {comment.author_name} a commenté"
         message['Reply-To'] = comment.author_email
 
-        message.attach(MIMEText(comment.message, 'plain'))
+        message.attach(MIMEText(html.unescape(comment.message), 'plain'))
 
         try:
             with smtplib.SMTP('localhost', 25) as server:
@@ -50,7 +51,7 @@ class SMTPEmailClient(EmailClient):
         message['Subject'] = f"[petitapetit.io] {comment.author_name} viens de t'envoyer un message"
         message['Reply-To'] = comment.author_email
 
-        message.attach(MIMEText(comment.message, 'plain'))
+        message.attach(MIMEText(html.unescape(comment.message), 'plain'))
 
         try:
             with smtplib.SMTP('localhost', 25) as server:
