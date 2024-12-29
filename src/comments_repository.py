@@ -2,7 +2,7 @@ import datetime
 import sqlite3
 from pathlib import Path
 
-from src.domain import UnregisteredComment, Comment
+from src.domain import UnregisteredComment, Comment, Message
 
 
 class CommentsRepository:
@@ -16,6 +16,37 @@ class CommentsRepository:
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS Comments (Id INT, PostSlug TEXT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
             )
+            cursor.execute(
+                "CREATE TABLE IF NOT EXISTS Messages (Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
+            )
+
+    def add_message(self, message: Message):
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
+            cursor.execute(
+                "INSERT INTO Messages(Author, Email, Message, Date) VALUES (?, ?, ?, ?)",
+                (
+                    message.author_name,
+                    message.author_email,
+                    message.message,
+                    message.date.isoformat(),
+                ),
+            )
+
+    def messages(self) -> list[Message]:
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
+            cursor.execute("SELECT Author, Email, Message, Date FROM Messages")
+            raw_comments = cursor.fetchall()
+            return [
+                Message(
+                    author_name=c[0],
+                    author_email=c[1],
+                    message=c[2],
+                    date=datetime.datetime.fromisoformat(c[3]),
+                )
+                for c in raw_comments
+            ]
 
     def add_comment(self, comment: UnregisteredComment):
         with sqlite3.connect(self._db_name) as con:

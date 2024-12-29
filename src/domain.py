@@ -19,3 +19,11 @@ class UnregisteredComment:
     author_email: str
     message: str
     date: datetime.date
+
+
+@dataclass(frozen=True)
+class Message:
+    author_name: str
+    author_email: str
+    message: str
+    date: datetime.datetime

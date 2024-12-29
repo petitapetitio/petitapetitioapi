@@ -1,6 +1,7 @@
 import datetime
 import sys
 from configparser import ConfigParser
+from dataclasses import asdict
 from pathlib import Path
 
 from flask import Flask, Response
@@ -9,7 +10,7 @@ from flask_cors import CORS
 from markupsafe import escape
 
 from src.comments_repository import CommentsRepository
-from src.domain import UnregisteredComment
+from src.domain import UnregisteredComment, Message
 from src.email_client import DisabledEmailClient, SMTPEmailClient
 
 app = Flask(__name__)
@@ -26,8 +27,6 @@ CORS(app, origins=origins)
 
 @app.route('/comments/<post_slug>')
 def get_comments(post_slug: str):
-    print("get_comments", post_slug)
-
     comments = comments_repository.comments(post_slug)
 
     formatted = ""
@@ -49,7 +48,6 @@ def get_comments(post_slug: str):
 
 @app.route('/comment', methods=['POST'])
 def add_comment():
-    print(request.values)
     comment = UnregisteredComment(
         escape(request.form['post_slug']),
         escape(request.form['author_name']),
@@ -60,4 +58,26 @@ def add_comment():
     comments_repository.add_comment(comment)
     email_client.notify_new_comment(comment)
     return Response(status=200)
+
+
+@app.route('/message', methods=['POST'])
+def send_message():
+    message = Message(
+        escape(request.form['author_name']),
+        escape(request.form['author_email']),
+        escape(request.form['message']),
+        datetime.datetime.now(),
+    )
+    comments_repository.add_message(message)
+    email_client.notify_new_message(message)
+    return Response(status=200)
+
+
+@app.route('/messages')
+def get_messages():
+    if request.remote_addr != '127.0.0.1':
+        return "Access denied", 403
+
+    message = comments_repository.messages()
+    return [asdict(m) for m in message]
 
