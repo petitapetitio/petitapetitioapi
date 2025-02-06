@@ -1,11 +1,30 @@
 import datetime
 import sqlite3
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
 from src.domain import UnregisteredComment, Comment, Message
 
 
-class CommentsRepository:
+class CommentsRepository(metaclass=ABCMeta):
+    @abstractmethod
+    def add_message(self, message: Message):
+        pass
+
+    @abstractmethod
+    def messages(self) -> list[Message]:
+        pass
+
+    @abstractmethod
+    def add_comment(self, comment: UnregisteredComment):
+        pass
+
+    @abstractmethod
+    def comments(self, post_slug: str) -> list[Comment]:
+        pass
+
+
+class SQLLiteCommentsRepository(CommentsRepository):
     def __init__(self, db_name: Path):
         self._db_name = db_name
         self._initialize_tables()

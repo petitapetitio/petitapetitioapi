@@ -9,7 +9,7 @@ from flask import request
 from flask_cors import CORS
 from markupsafe import escape
 
-from src.comments_repository import CommentsRepository
+from src.comments_repository import SQLLiteCommentsRepository
 from src.domain import UnregisteredComment, Message
 from src.email_client import DisabledEmailClient, SMTPEmailClient
 
@@ -18,7 +18,7 @@ app = Flask(__name__)
 config = ConfigParser()
 config.read("settings.ini")
 db = Path(config["general"]["db_path"])
-comments_repository = CommentsRepository(db)
+comments_repository = SQLLiteCommentsRepository(db)
 origins = config["general"]["cors_origins"].split(",")
 is_local = sys.platform.startswith("darwin")
 email_client = DisabledEmailClient() if is_local else SMTPEmailClient()
