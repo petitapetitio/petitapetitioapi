@@ -114,22 +114,21 @@ class PostgresCommentsRepository(CommentsRepository):
                 """
                 CREATE TABLE IF NOT EXISTS comments (
                     id SERIAL PRIMARY KEY,
-                    post_slug text,
-                    author_name text,
-                    author_email text,
-                    message text,
-                    sent_at timestamp DEFAULT CURRENT_DATE
-                )
-                """
-            )
-            cur.execute(
-                """
+                    post_slug text NOT NULL,
+                    author_name text NOT NULL CHECK(length(author_name) < 100),
+                    author_email text NOT NULL CHECK(length(author_email) < 250),
+                    message text NOT NULL CHECK(length(message) < 1000),
+                    sent_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments(post_slug);
+                
                 CREATE TABLE IF NOT EXISTS messages (
-                    author_name text,
-                    author_email text,
-                    message text,
-                    sent_at timestamp
-                )
+                    author_name text NOT NULL CHECK(length(author_name) < 100),
+                    author_email text NOT NULL CHECK(length(author_email) < 250),
+                    message text NOT NULL CHECK(length(message) < 1000),
+                    sent_at timestamp NOT NULL 
+                );
                 """
             )
 
