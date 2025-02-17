@@ -106,9 +106,10 @@ class SQLLiteCommentsRepository(CommentsRepository):
 
 
 class PostgresCommentsRepository(CommentsRepository):
-    def __init__(self, connection: psycopg.Connection):
-        self._connection = connection
-        with connection.cursor() as cur:
+    def __init__(self, connection_string: str):
+        self._connection_string = connection_string
+        with psycopg.connect(self._connection_string) as conn:
+            cur = conn.cursor()
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS comments (
@@ -133,27 +134,31 @@ class PostgresCommentsRepository(CommentsRepository):
             )
 
     def add_message(self, message: Message):
-        with self._connection.cursor() as cur:
+        with psycopg.connect(self._connection_string) as conn:
+            cur = conn.cursor()
             cur.execute(
                 "INSERT INTO messages (author_name, author_email, message, created_on) VALUES (%s, %s, %s, %s)",
                 (message.author_name, message.author_email, message.message, message.date),
             )
 
     def messages(self) -> list[Message]:
-        with self._connection.cursor() as cur:
+        with psycopg.connect(self._connection_string) as conn:
+            cur = conn.cursor()
             res = cur.execute("SELECT author_name, author_email, message, created_on FROM messages")
             messages = [Message(author_name=r[0], author_email=r[1], message=r[2], date=r[3]) for r in res.fetchall()]
             return messages
 
     def add_comment(self, comment: UnregisteredComment):
-        with self._connection.cursor() as cur:
+        with psycopg.connect(self._connection_string) as conn:
+            cur = conn.cursor()
             cur.execute(
                 "INSERT INTO comments (post_slug, author_name, author_email, message, created_on) values (%s, %s, %s, %s, %s)",
                 (comment.post_slug, comment.author_name, comment.author_email, comment.message, comment.date),
             )
 
     def comments(self, post_slug: str) -> list[Comment]:
-        with self._connection.cursor() as cur:
+        with psycopg.connect(self._connection_string) as conn:
+            cur = conn.cursor()
             cur.execute(
                 "SELECT id, post_slug, author_name, author_email, message, created_on FROM comments where post_slug = %s",
                 (post_slug,),
