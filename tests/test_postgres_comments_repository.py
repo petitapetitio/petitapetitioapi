@@ -34,7 +34,7 @@ def test_adding_and_retrieving_two_comments():
             "Tom",
             "t@tom.io",
             "Salut !",
-            date(2024, 12, 10),
+            datetime(2024, 12, 10),
         )
     )
     comments_repository.add_comment(
@@ -43,7 +43,7 @@ def test_adding_and_retrieving_two_comments():
             "Mike",
             "m@mike.io",
             "Salut c'est Mike!",
-            date(
+            datetime(
                 2024,
                 12,
                 11,
@@ -54,8 +54,8 @@ def test_adding_and_retrieving_two_comments():
     comments_repository = PostgresCommentsRepository(get_test_db_connection())
     retrieved = comments_repository.comments("dbz")
     assert retrieved == [
-        Comment(1, "dbz", "Tom", "t@tom.io", "Salut !", date(2024, 12, 10)),
-        Comment(2, "dbz", "Mike", "m@mike.io", "Salut c'est Mike!", date(2024, 12, 11)),
+        Comment(1, "dbz", "Tom", "t@tom.io", "Salut !", datetime(2024, 12, 10)),
+        Comment(2, "dbz", "Mike", "m@mike.io", "Salut c'est Mike!", datetime(2024, 12, 11)),
     ]
 
 

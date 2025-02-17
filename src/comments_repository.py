@@ -48,7 +48,7 @@ class SQLLiteCommentsRepository(CommentsRepository):
                     message.author_name,
                     message.author_email,
                     message.message,
-                    message.date.isoformat(),
+                    message.sent_at.isoformat(),
                 ),
             )
 
@@ -62,7 +62,7 @@ class SQLLiteCommentsRepository(CommentsRepository):
                     author_name=c[0],
                     author_email=c[1],
                     message=c[2],
-                    date=datetime.datetime.fromisoformat(c[3]),
+                    sent_at=datetime.datetime.fromisoformat(c[3]),
                 )
                 for c in raw_comments
             ]
@@ -82,7 +82,7 @@ class SQLLiteCommentsRepository(CommentsRepository):
                     comment.author_name,
                     comment.author_email,
                     comment.message,
-                    comment.date.strftime("%Y-%m-%d"),
+                    comment.sent_at.isoformat(),
                 ),
             )
 
@@ -98,7 +98,7 @@ class SQLLiteCommentsRepository(CommentsRepository):
                     author_name=c[1],
                     author_email=c[2],
                     message=c[3],
-                    date=datetime.datetime.strptime(c[4], "%Y-%m-%d").date(),
+                    sent_at=datetime.datetime.fromisoformat(c[4]),
                 )
                 for c in raw_comments
             ]
@@ -113,12 +113,12 @@ class PostgresCommentsRepository(CommentsRepository):
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS comments (
-                    id SERIAL,
+                    id SERIAL PRIMARY KEY,
                     post_slug text,
                     author_name text,
                     author_email text,
                     message text,
-                    created_on date DEFAULT CURRENT_DATE
+                    sent_at timestamp DEFAULT CURRENT_DATE
                 )
                 """
             )
@@ -128,7 +128,7 @@ class PostgresCommentsRepository(CommentsRepository):
                     author_name text,
                     author_email text,
                     message text,
-                    created_on timestamp
+                    sent_at timestamp
                 )
                 """
             )
@@ -137,30 +137,30 @@ class PostgresCommentsRepository(CommentsRepository):
         with psycopg.connect(self._connection_string) as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO messages (author_name, author_email, message, created_on) VALUES (%s, %s, %s, %s)",
-                (message.author_name, message.author_email, message.message, message.date),
+                "INSERT INTO messages (author_name, author_email, message, sent_at) VALUES (%s, %s, %s, %s)",
+                (message.author_name, message.author_email, message.message, message.sent_at),
             )
 
     def messages(self) -> list[Message]:
         with psycopg.connect(self._connection_string) as conn:
             cur = conn.cursor()
-            res = cur.execute("SELECT author_name, author_email, message, created_on FROM messages")
-            messages = [Message(author_name=r[0], author_email=r[1], message=r[2], date=r[3]) for r in res.fetchall()]
+            res = cur.execute("SELECT author_name, author_email, message, sent_at FROM messages")
+            messages = [Message(author_name=r[0], author_email=r[1], message=r[2], sent_at=r[3]) for r in res.fetchall()]
             return messages
 
     def add_comment(self, comment: UnregisteredComment):
         with psycopg.connect(self._connection_string) as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO comments (post_slug, author_name, author_email, message, created_on) values (%s, %s, %s, %s, %s)",
-                (comment.post_slug, comment.author_name, comment.author_email, comment.message, comment.date),
+                "INSERT INTO comments (post_slug, author_name, author_email, message, sent_at) values (%s, %s, %s, %s, %s)",
+                (comment.post_slug, comment.author_name, comment.author_email, comment.message, comment.sent_at),
             )
 
     def comments(self, post_slug: str) -> list[Comment]:
         with psycopg.connect(self._connection_string) as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT id, post_slug, author_name, author_email, message, created_on FROM comments where post_slug = %s",
+                "SELECT id, post_slug, author_name, author_email, message, sent_at FROM comments where post_slug = %s",
                 (post_slug,),
             )
             results = list(cur.fetchall())
@@ -171,7 +171,7 @@ class PostgresCommentsRepository(CommentsRepository):
                     author_name=r[2],
                     author_email=r[3],
                     message=r[4],
-                    date=r[5],
+                    sent_at=r[5],
                 )
                 for r in results
             ]

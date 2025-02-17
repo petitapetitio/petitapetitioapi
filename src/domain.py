@@ -9,7 +9,7 @@ class Comment:
     author_name: str
     author_email: str
     message: str
-    date: datetime.date
+    sent_at: datetime.datetime
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class UnregisteredComment:
     author_name: str
     author_email: str
     message: str
-    date: datetime.date
+    sent_at: datetime.datetime
 
 
 @dataclass(frozen=True)
@@ -26,4 +26,4 @@ class Message:
     author_name: str
     author_email: str
     message: str
-    date: datetime.datetime
+    sent_at: datetime.datetime

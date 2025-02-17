@@ -45,7 +45,7 @@ def get_comments(post_slug: str):
     for comment in comments:
         formatted += f"""
 <li id="comment-{comment.comment_id}">
-<cite>{comment.author_name} ({comment.date}) <a href="#comment-{comment.comment_id}">#</a></cite>
+<cite>{comment.author_name} ({comment.sent_at}) <a href="#comment-{comment.comment_id}">#</a></cite>
 <p>{comment.message}</p>
 </li>"""
 
@@ -65,7 +65,7 @@ def add_comment():
         escape(request.form["author_name"]),
         escape(request.form["author_email"]),
         escape(request.form["message"]),
-        datetime.date.today(),
+        datetime.datetime.now(),
     )
     comments_repository.add_comment(comment)
     email_client.notify_new_comment(comment)
