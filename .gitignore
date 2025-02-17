@@ -3,4 +3,4 @@ __pycache__/
 .idea
 data
 settings.ini
-
+.DS_Store
