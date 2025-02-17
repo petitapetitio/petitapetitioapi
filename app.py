@@ -25,7 +25,7 @@ email_client = DisabledEmailClient() if is_local else SMTPEmailClient()
 CORS(app, origins=origins)
 
 
-@app.route('/comments/<post_slug>')
+@app.route("/comments/<post_slug>")
 def get_comments(post_slug: str):
     comments = comments_repository.comments(post_slug)
 
@@ -46,13 +46,13 @@ def get_comments(post_slug: str):
 """
 
 
-@app.route('/comment', methods=['POST'])
+@app.route("/comment", methods=["POST"])
 def add_comment():
     comment = UnregisteredComment(
-        escape(request.form['post_slug']),
-        escape(request.form['author_name']),
-        escape(request.form['author_email']),
-        escape(request.form['message']),
+        escape(request.form["post_slug"]),
+        escape(request.form["author_name"]),
+        escape(request.form["author_email"]),
+        escape(request.form["message"]),
         datetime.date.today(),
     )
     comments_repository.add_comment(comment)
@@ -60,12 +60,12 @@ def add_comment():
     return Response(status=200)
 
 
-@app.route('/message', methods=['POST'])
+@app.route("/message", methods=["POST"])
 def send_message():
     message = Message(
-        escape(request.form['author_name']),
-        escape(request.form['author_email']),
-        escape(request.form['message']),
+        escape(request.form["author_name"]),
+        escape(request.form["author_email"]),
+        escape(request.form["message"]),
         datetime.datetime.now(),
     )
     comments_repository.add_message(message)
@@ -73,11 +73,10 @@ def send_message():
     return Response(status=200)
 
 
-@app.route('/messages')
+@app.route("/messages")
 def get_messages():
-    if request.remote_addr != '127.0.0.1':
+    if request.remote_addr != "127.0.0.1":
         return "Access denied", 403
 
     message = comments_repository.messages()
     return [asdict(m) for m in message]
-

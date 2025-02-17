@@ -37,9 +37,7 @@ class SQLLiteCommentsRepository(CommentsRepository):
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS Comments (Id INT, PostSlug TEXT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
             )
-            cursor.execute(
-                "CREATE TABLE IF NOT EXISTS Messages (Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
-            )
+            cursor.execute("CREATE TABLE IF NOT EXISTS Messages (Author TEXT, Email TEXT, Message TEXT, Date TEXT)")
 
     def add_message(self, message: Message):
         with sqlite3.connect(self._db_name) as con:
@@ -138,7 +136,7 @@ class PostgresCommentsRepository(CommentsRepository):
         with self._connection.cursor() as cur:
             cur.execute(
                 "INSERT INTO messages (author_name, author_email, message, created_on) VALUES (%s, %s, %s, %s)",
-                (message.author_name, message.author_email, message.message, message.date)
+                (message.author_name, message.author_email, message.message, message.date),
             )
 
     def messages(self) -> list[Message]:
@@ -146,7 +144,6 @@ class PostgresCommentsRepository(CommentsRepository):
             res = cur.execute("SELECT author_name, author_email, message, created_on FROM messages")
             messages = [Message(author_name=r[0], author_email=r[1], message=r[2], date=r[3]) for r in res.fetchall()]
             return messages
-
 
     def add_comment(self, comment: UnregisteredComment):
         with self._connection.cursor() as cur:
