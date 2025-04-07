@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 import psycopg
 
-from src.comments_repository import PostgresCommentsRepository
+from src.postgres_repository import PostgresCommentsRepository
 from src.domain import UnregisteredComment, Comment, Message
 
 
