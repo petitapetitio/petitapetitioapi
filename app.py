@@ -1,9 +1,9 @@
 import datetime
-import os
 import sys
 from configparser import ConfigParser
 from dataclasses import asdict
 from pathlib import Path
+from textwrap import dedent
 
 import dotenv
 from flask import Flask, Response
@@ -11,26 +11,26 @@ from flask import request
 from flask_cors import CORS
 from markupsafe import escape
 
-from src.comments_repository import PostgresCommentsRepository
-from src.domain import UnregisteredComment, Message
+from src.comments_repository import SQLLiteCommentsRepository
+from src.domain import UnregisteredComment, Message, Email
 from src.email_client import DisabledEmailClient, SMTPEmailClient
 
 app = Flask(__name__)
 
 config = ConfigParser()
 config.read("settings.ini")
-db = Path(config["general"]["db_path"])
+_db_path = Path(config["general"]["db_path"])
 
 dotenv.load_dotenv()
-db_name = os.environ["DB_NAME"]
-db_user = os.environ["DB_USER"]
-db_pass = os.environ["DB_PASS"]
-db_host = os.environ["DB_HOST"]
-db_port = os.environ["DB_PORT"]
 
-comments_repository = PostgresCommentsRepository(
-    f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
-)
+# db_name = os.environ["DB_NAME"]
+# db_user = os.environ["DB_USER"]
+# db_pass = os.environ["DB_PASS"]
+# db_host = os.environ["DB_HOST"]
+# db_port = os.environ["DB_PORT"]
+# comments_repository = PostgresCommentsRepository(f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
+comments_repository = SQLLiteCommentsRepository(_db_path)
+
 origins = config["general"]["cors_origins"].split(",")
 is_local = sys.platform.startswith("darwin")
 email_client = DisabledEmailClient() if is_local else SMTPEmailClient()
@@ -43,19 +43,24 @@ def get_comments(post_slug: str):
 
     formatted = ""
     for comment in comments:
-        formatted += f"""
-<li id="comment-{comment.comment_id}">
-<cite>{comment.author_name} ({comment.sent_at}) <a href="#comment-{comment.comment_id}">#</a></cite>
-<p>{comment.message}</p>
-</li>"""
+        formatted += dedent(
+            f"""
+            <li id="comment-{comment.comment_id}">
+            <cite>{comment.author_name} ({comment.sent_at}) <a href="#comment-{comment.comment_id}">#</a></cite>
+            <p>{comment.message}</p>
+            </li>
+            """
+        )
 
-    return f"""
+    return dedent(
+        f"""
         <div id="commentlist">
             <ol>
                 {formatted}
             </ol>
         </div>
-"""
+        """
+    )
 
 
 @app.route("/comment", methods=["POST"])
@@ -92,3 +97,11 @@ def get_messages():
 
     message = comments_repository.messages()
     return [asdict(m) for m in message]
+
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    email = Email(escape(request.form["with_email"]))
+    comments_repository.add_email(email)
+    email_client.notify_new_subscription(email)
+    return Response(status=200)

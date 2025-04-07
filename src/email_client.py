@@ -4,7 +4,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from src.domain import UnregisteredComment, Message
+from src.domain import UnregisteredComment, Message, Email
 
 
 class EmailClient(abc.ABC):
@@ -17,6 +17,10 @@ class EmailClient(abc.ABC):
     def notify_new_message(self, comment: Message):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def notify_new_subscription(self, email: Email):
+        raise NotImplementedError
+
 
 class DisabledEmailClient(EmailClient):
 
@@ -25,6 +29,9 @@ class DisabledEmailClient(EmailClient):
 
     def notify_new_message(self, message: Message):
         print("notify_new_message", message)
+
+    def notify_new_subscription(self, email: Email):
+        print("notify_new_subscription", email)
 
 
 class SMTPEmailClient(EmailClient):
@@ -58,3 +65,7 @@ class SMTPEmailClient(EmailClient):
                 server.send_message(message)
         except Exception as e:
             print(f"Error sending email: {e}")
+
+    def notify_new_subscription(self, email: Email):
+        print("notify_new_subscription: TODO")
+

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import psycopg
 
-from src.domain import UnregisteredComment, Comment, Message
+from src.domain import UnregisteredComment, Comment, Message, Email
 
 
 class CommentsRepository(metaclass=ABCMeta):
@@ -25,6 +25,14 @@ class CommentsRepository(metaclass=ABCMeta):
     def comments(self, post_slug: str) -> list[Comment]:
         pass
 
+    @abstractmethod
+    def add_email(self, email: Email):
+        raise NotImplementedError
+
+    @abstractmethod
+    def emails(self) -> list[Email]:
+        raise NotImplementedError
+
 
 class SQLLiteCommentsRepository(CommentsRepository):
     def __init__(self, db_name: Path):
@@ -38,6 +46,13 @@ class SQLLiteCommentsRepository(CommentsRepository):
                 "CREATE TABLE IF NOT EXISTS Comments (Id INT, PostSlug TEXT, Author TEXT, Email TEXT, Message TEXT, Date TEXT)"
             )
             cursor.execute("CREATE TABLE IF NOT EXISTS Messages (Author TEXT, Email TEXT, Message TEXT, Date TEXT)")
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Users (
+                Id INT UNIQUE, 
+                Name TEXT, 
+                Email TEXT PRIMARY KEY
+            )
+            """)
 
     def add_message(self, message: Message):
         with sqlite3.connect(self._db_name) as con:
@@ -104,6 +119,30 @@ class SQLLiteCommentsRepository(CommentsRepository):
             ]
         return comments
 
+    def add_email(self, email: Email):
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
+            cursor.execute("SELECT max(Id) FROM Users")
+            id_max = cursor.fetchone()[0]
+            identifier = id_max + 1 if id_max is not None else 1
+
+            cursor.execute(
+                "INSERT INTO Users(Id, Name, Email) VALUES (?, ?, ?) ON CONFLICT(Email) DO NOTHING",
+                (
+                    identifier,
+                    "",
+                    email._email,
+                ),
+            )
+
+    def emails(self) -> list[Email]:
+        with sqlite3.connect(self._db_name) as con:
+            cursor = con.cursor()
+            cursor.execute("SELECT Email FROM Users")
+            raw_users = cursor.fetchall()
+            emails = [Email(e[0]) for e in raw_users]
+        return emails
+
 
 class PostgresCommentsRepository(CommentsRepository):
     def __init__(self, connection_string: str):
@@ -144,7 +183,9 @@ class PostgresCommentsRepository(CommentsRepository):
         with psycopg.connect(self._connection_string) as conn:
             cur = conn.cursor()
             res = cur.execute("SELECT author_name, author_email, message, sent_at FROM messages")
-            messages = [Message(author_name=r[0], author_email=r[1], message=r[2], sent_at=r[3]) for r in res.fetchall()]
+            messages = [
+                Message(author_name=r[0], author_email=r[1], message=r[2], sent_at=r[3]) for r in res.fetchall()
+            ]
             return messages
 
     def add_comment(self, comment: UnregisteredComment):

@@ -27,3 +27,9 @@ class Message:
     author_email: str
     message: str
     sent_at: datetime.datetime
+
+
+@dataclass(frozen=True)
+class Email:
+    _email: str
+

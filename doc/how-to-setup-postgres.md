@@ -1,4 +1,9 @@
-# DB
+# DB PostgreSQL
+
+> psycopg is not supported by OpenBSD. 
+> I've rolled back the code to 3cf3414ec74afdc8a5d0ae59e309c728e41ce243.
+> Claude offer tips on how it may work : https://claude.ai/chat/6a315fd7-4b48-4f22-b161-7f11835be420.
+> Put this on hold for now.
 
 Créer la db sur OpenBSD
 ```shell
