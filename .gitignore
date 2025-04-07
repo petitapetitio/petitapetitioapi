@@ -5,3 +5,4 @@ data
 settings.ini
 .DS_Store
 .env
+error.log

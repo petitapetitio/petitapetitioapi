@@ -28,4 +28,4 @@ flask --app app run
 3. move to the project (`cd /var/www/petitapetitioapi/`)
 4. `git pull` (with my user)
 5. update the dependencies : `. ../venvs/petitapetitioapi_310/bin/activate; pip install -r requirements.txt`
-6. `doas rcctl restart petitapetitioapi`
+6. `doas rcctl restart petitapetitioapid`
